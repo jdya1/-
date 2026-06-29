@@ -1,0 +1,620 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>منصة التقييم الذكية | designer_basra</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800;900&display=swap');
+        body { font-family: 'Tajawal', sans-serif; background-color: #f8fafc; }
+        
+        .btn-3d {
+            transition: all 0.2s ease;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.15), inset 0 -4px 0 rgba(0,0,0,0.1);
+        }
+        .btn-3d:active {
+            transform: translateY(4px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.15), inset 0 -2px 0 rgba(0,0,0,0.1);
+        }
+        .animate-fade-in { animation: fadeIn 0.3s ease-in-out; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+    </style>
+</head>
+<body class="text-gray-800 min-h-screen flex flex-col">
+
+    <!-- ================= 1. واجهة الدخول ================= -->
+    <div id="loginPage" class="flex-grow flex items-center justify-center p-4 hidden">
+        <div class="bg-white p-8 rounded-3xl shadow-xl border border-gray-100 max-w-md w-full relative overflow-hidden">
+            <div class="absolute top-0 left-0 w-full h-2 bg-indigo-600"></div>
+            <div class="text-center mb-6">
+                <div class="w-16 h-16 bg-indigo-50 rounded-2xl flex items-center justify-center mx-auto mb-3 text-indigo-600 text-3xl font-bold">🏢</div>
+                <h2 class="text-2xl font-bold text-gray-800">تسجيل الدخول</h2>
+                <p class="text-xs text-gray-400 mt-1 font-mono">designer_basra</p>
+            </div>
+            <form id="loginForm" class="space-y-4">
+                <input type="email" id="loginEmail" required class="w-full p-3 bg-gray-50 border rounded-xl" placeholder="البريد الإلكتروني">
+                <input type="password" id="loginPassword" required class="w-full p-3 bg-gray-50 border rounded-xl" placeholder="كلمة المرور">
+                <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 rounded-xl">دخول</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- ================= 2. شريط التنقل العلوي ================= -->
+    <nav id="mainNav" class="bg-white shadow-sm p-4 sticky top-0 z-40 hidden border-b border-gray-200">
+        <div class="container mx-auto flex justify-between items-center">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 bg-indigo-100 text-indigo-600 rounded-lg flex items-center justify-center font-bold text-xl">⚙️</div>
+                <div>
+                    <h1 id="navTitle" class="font-bold text-gray-800 text-lg">لوحة التحكم</h1>
+                    <span class="text-[10px] bg-indigo-600 text-white px-2 py-0.5 rounded-full mt-1 inline-block font-mono">designer_basra</span>
+                </div>
+            </div>
+            <div class="flex gap-2">
+                <button id="returnToOwnerBtn" onclick="backToOwner()" class="hidden bg-amber-100 hover:bg-amber-200 text-amber-800 text-sm px-4 py-2 rounded-xl font-bold">العودة للإدارة 🔙</button>
+                <button onclick="logout()" class="bg-red-50 hover:bg-red-100 text-red-600 text-sm px-4 py-2 rounded-xl font-bold">خروج 🚪</button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- ================= 3. لوحة تحكم المالك ================= -->
+    <div id="ownerDashboard" class="container mx-auto my-8 p-4 flex-grow hidden">
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8">
+            <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 lg:col-span-1">
+                <h2 class="text-lg font-bold text-indigo-600 border-b pb-2 mb-4">➕ إضافة متجر جديد</h2>
+                <form id="adminAddStoreForm" class="space-y-4">
+                    <input type="text" id="adminNewName" required class="w-full p-2.5 border rounded-lg" placeholder="اسم المتجر">
+                    <input type="email" id="adminNewEmail" required class="w-full p-2.5 border rounded-lg" placeholder="البريد الإلكتروني">
+                    <input type="text" id="adminNewPass" required class="w-full p-2.5 border rounded-lg" placeholder="كلمة المرور">
+                    <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2.5 rounded-lg">إنشاء الحساب</button>
+                </form>
+            </div>
+            <div class="bg-gradient-to-br from-indigo-600 to-purple-700 p-8 rounded-2xl text-white shadow-sm flex flex-col justify-center lg:col-span-2">
+                 <h2 class="text-3xl font-bold mb-3">الإدارة الرئيسية للمنصة</h2>
+                 <p class="opacity-90 max-w-lg mb-6">الدخول السريع لأي متجر ومراقبة الاشتراكات والرسائل.</p>
+                 <div class="flex gap-4">
+                     <div class="bg-white/20 p-4 rounded-xl min-w-[120px] text-center">
+                         <span class="block text-sm font-medium mb-1">إجمالي المتاجر</span>
+                         <span id="totalStoresCount" class="text-4xl font-black">0</span>
+                     </div>
+                 </div>
+            </div>
+        </div>
+        <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 overflow-x-auto">
+            <table class="w-full text-right border-collapse">
+                <thead>
+                    <tr class="bg-gray-50 text-gray-600 text-sm">
+                        <th class="p-4">المتجر / الجيميل</th>
+                        <th class="p-4">حالة الحساب</th>
+                        <th class="p-4">الاشتراك</th>
+                        <th class="p-4 text-center">الإجراءات</th>
+                    </tr>
+                </thead>
+                <tbody id="ownerStoresList" class="divide-y divide-gray-100"></tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- ================= 4. لوحة تحكم المتجر ================= -->
+    <div id="storeDashboard" class="container mx-auto my-8 p-4 flex-grow hidden">
+        
+        <!-- 📊 قسم الإحصائيات والبوت -->
+        <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 mb-8 relative overflow-hidden">
+            <div class="absolute top-0 right-0 w-32 h-32 bg-indigo-50 rounded-bl-full -z-10"></div>
+            
+            <div class="flex flex-col md:flex-row justify-between items-center mb-6">
+                <div>
+                    <h2 class="text-2xl font-bold text-gray-800">نظرة عامة على الأداء</h2>
+                    <p class="text-sm text-gray-500">مراقبة تفاعل العملاء مع باركود متجرك</p>
+                </div>
+                <button onclick="runSmartBot()" class="mt-4 md:mt-0 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white font-bold py-2.5 px-6 rounded-xl shadow-lg transition flex items-center gap-2 transform hover:scale-105">
+                    <span class="text-xl">🤖</span> المستشار الذكي (تحليل الأداء)
+                </button>
+            </div>
+
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <div class="bg-gray-50 p-4 rounded-2xl border border-gray-100 text-center">
+                    <div class="text-gray-400 mb-1 text-sm font-bold">عمليات المسح</div>
+                    <div id="statScans" class="text-3xl font-black text-indigo-600">0</div>
+                </div>
+                <div class="bg-green-50 p-4 rounded-2xl border border-green-100 text-center">
+                    <div class="text-green-600 mb-1 text-sm font-bold">نقرات (جوجل)</div>
+                    <div id="statMaps" class="text-3xl font-black text-green-600">0</div>
+                </div>
+                <div class="bg-blue-50 p-4 rounded-2xl border border-blue-100 text-center">
+                    <div class="text-blue-600 mb-1 text-sm font-bold">تفاعل الاستبيان</div>
+                    <div id="statForm" class="text-3xl font-black text-blue-600">0</div>
+                </div>
+                <div class="bg-red-50 p-4 rounded-2xl border border-red-100 text-center">
+                    <div class="text-red-500 mb-1 text-sm font-bold">نقرات (واتساب)</div>
+                    <div id="statWa" class="text-3xl font-black text-red-600">0</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            
+            <!-- 📥 صندوق الوارد الداخلي -->
+            <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 lg:col-span-1 flex flex-col">
+                <h2 class="text-lg font-bold text-blue-600 border-b pb-2 mb-4 flex items-center gap-2">
+                    <span class="text-2xl">📥</span> صندوق الملاحظات
+                </h2>
+                <p class="text-xs text-gray-500 mb-2">يستقبل الرسائل فقط إذا تم تفعيل "الاستبيان الداخلي"</p>
+                <div id="inboxMessages" class="flex-grow overflow-y-auto max-h-[400px] space-y-3 pr-2">
+                    <!-- تظهر الرسائل هنا -->
+                </div>
+            </div>
+
+            <!-- ⚙️ إعدادات المتجر -->
+            <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 lg:col-span-1">
+                <h2 class="text-lg font-bold text-indigo-600 border-b pb-2 mb-4">⚙️ إعدادات المتجر والروابط</h2>
+                <form id="settingsForm" class="space-y-5">
+                    <div class="p-4 bg-gray-50 rounded-xl border border-gray-200">
+                        <label class="block font-bold mb-1 text-sm text-gray-700">🖼️ شعار المتجر:</label>
+                        <input type="file" id="logoUpload" accept="image/*" class="text-xs w-full mb-2">
+                        <img id="logoPreview" src="" class="w-16 h-16 rounded-xl object-contain border hidden bg-white">
+                    </div>
+                    
+                    <div class="p-4 bg-gray-50 rounded-xl border border-gray-200">
+                        <label class="block font-bold mb-1 text-sm text-gray-700">1. رابط Google Maps (الأخضر):</label>
+                        <input type="url" id="setGoogle" required class="w-full p-2 border rounded-lg text-sm">
+                    </div>
+                    
+                    <!-- إعداد زر الاستبيان المزدوج الخيارات -->
+                    <div class="p-4 bg-blue-50/50 rounded-xl border border-blue-100">
+                        <label class="block font-bold mb-3 text-sm text-blue-900">2. إعداد زر الاستبيان (الأزرق):</label>
+                        
+                        <div class="flex flex-col gap-2 mb-3">
+                            <label class="flex items-center gap-2 text-sm cursor-pointer bg-white p-2 rounded border border-blue-200">
+                                <input type="radio" name="surveyType" value="internal" onchange="toggleSurveySettings()" class="text-blue-600 focus:ring-blue-500">
+                                <span class="font-bold">استبيان داخلي (مباشر للنظام)</span>
+                            </label>
+                            <label class="flex items-center gap-2 text-sm cursor-pointer bg-white p-2 rounded border border-blue-200">
+                                <input type="radio" name="surveyType" value="external" onchange="toggleSurveySettings()" class="text-blue-600 focus:ring-blue-500">
+                                <span class="font-bold">رابط خارجي (Google Forms)</span>
+                            </label>
+                        </div>
+
+                        <!-- شرح الاستبيان الداخلي -->
+                        <div id="internalSurveySettings" class="text-xs text-gray-500 bg-white p-3 rounded-lg border">
+                            العميل سيكتب ملاحظته مباشرة في الصفحة، وستصلك في صندوق الوارد المجاور.
+                        </div>
+
+                        <!-- إعداد الاستبيان الخارجي -->
+                        <div id="externalSurveySettings" class="hidden space-y-2">
+                            <div class="bg-white p-2 rounded border">
+                                <p class="text-[11px] text-gray-600 mb-1">ننصحك بإنشاء استبيان احترافي عبر نماذج جوجل:</p>
+                                <a href="https://docs.google.com/forms" target="_blank" class="text-blue-600 font-bold underline text-xs">اضغط هنا لفتح Google Forms وإنشاء استبيان</a>
+                            </div>
+                            <input type="url" id="setForm" class="w-full p-2 border border-blue-300 rounded-lg text-sm" placeholder="انسخ رابط نموذج جوجل والصقه هنا...">
+                        </div>
+                    </div>
+
+                    <div class="p-4 bg-gray-50 rounded-xl border border-gray-200">
+                        <label class="block font-bold mb-1 text-sm text-gray-700">3. رقم الواتساب المباشر (الأحمر):</label>
+                        <input type="text" id="setWhatsapp" required class="w-full p-2 border rounded-lg text-sm" placeholder="9647700000000">
+                    </div>
+                    <button type="submit" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 rounded-xl">💾 حفظ الإعدادات</button>
+                </form>
+            </div>
+
+            <!-- الباركود -->
+            <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 flex flex-col items-center text-center lg:col-span-1">
+                <h3 class="font-bold text-xl mb-2">الباركود الثابت لمتجرك</h3>
+                <div id="storeQrCode" class="mb-4 p-3 bg-white rounded-xl shadow-sm border"></div>
+                <button onclick="downloadQR()" class="mb-3 w-full bg-gray-800 text-white font-bold py-2 rounded-xl">📥 تحميل الباركود كصورة</button>
+                <button onclick="previewCustomerPage()" class="w-full bg-indigo-600 text-white font-bold py-2 rounded-xl">👁️ معاينة الصفحة</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ================= 5. نافذة البوت الذكي ================= -->
+    <div id="botModal" class="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4 hidden backdrop-blur-sm transition-all">
+        <div class="bg-white rounded-3xl max-w-lg w-full p-8 shadow-2xl relative border-2 border-indigo-100">
+            <button onclick="closeBotModal()" class="absolute top-4 left-4 text-gray-400 hover:text-gray-700 text-3xl font-bold">&times;</button>
+            <div class="flex items-center gap-4 mb-6 border-b pb-4">
+                <div class="w-16 h-16 bg-gradient-to-br from-purple-100 to-indigo-100 rounded-2xl flex items-center justify-center text-4xl shadow-inner">🤖</div>
+                <div>
+                    <h2 class="text-2xl font-black text-transparent bg-clip-text bg-gradient-to-r from-purple-600 to-indigo-600">المستشار الذكي</h2>
+                    <p class="text-sm text-gray-500 font-bold">تحليل ذكي لبيانات تفاعل العملاء</p>
+                </div>
+            </div>
+            <div id="botAdviceContent" class="space-y-4 text-gray-700 max-h-[60vh] overflow-y-auto pr-2"></div>
+            <div class="mt-6 text-center">
+                <button onclick="closeBotModal()" class="bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold py-2 px-6 rounded-xl transition">حسناً، فهمت</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ================= 6. صفحة العميل النهائي ================= -->
+    <div id="customerPage" class="fixed inset-0 bg-[#fdfbf7] z-50 flex items-center justify-center p-4 hidden overflow-y-auto">
+        <div class="absolute inset-0 flex items-center justify-center pointer-events-none opacity-[0.03]">
+            <span class="text-7xl font-bold font-mono rotate-[-45deg]">designer_basra</span>
+        </div>
+
+        <div class="w-full max-w-sm relative z-10">
+            <div id="customerContent">
+                <div class="flex justify-center mb-6">
+                    <img id="custLogo" src="" class="h-24 w-auto rounded-2xl shadow-sm object-contain hidden border-2 border-white">
+                    <div id="custLogoPlaceholder" class="w-20 h-20 bg-white rounded-full flex items-center justify-center border-4 border-white shadow-sm"><span class="text-4xl">👋</span></div>
+                </div>
+
+                <div class="text-center mb-8">
+                    <h3 class="text-xl font-bold text-[#8b6f4e] mb-1">رأيك يهمنا</h3>
+                    <h2 class="text-4xl font-black text-[#5c4021] leading-tight">كيف كانت<br>تجربتك معنا؟</h2>
+                </div>
+                
+                <div id="mainButtonsSection" class="animate-fade-in">
+                    <div class="grid grid-cols-2 gap-4 mb-4">
+                        <button onclick="openLink('maps')" class="btn-3d bg-gradient-to-br from-[#4ade80] to-[#16a34a] text-white rounded-[28px] p-5 flex flex-col items-center justify-center border border-[#15803d]">
+                            <div class="text-4xl mb-3">📍</div>
+                            <span class="font-extrabold text-base mb-1">قيمنا على</span><span class="font-extrabold text-base mb-2">خرائط جوجل</span>
+                            <div class="flex text-yellow-300 text-xl">★★★★★</div>
+                        </button>
+
+                        <!-- تم تغيير الزر الأزرق لتوجيه ذكي بناءً على الإعدادات -->
+                        <button onclick="handleSurveyClick()" class="btn-3d bg-gradient-to-br from-[#38bdf8] to-[#0284c7] text-white rounded-[28px] p-5 flex flex-col items-center justify-center border border-[#0369a1]">
+                            <div class="text-4xl mb-3">📝</div>
+                            <span class="font-extrabold text-base leading-snug">وشاركنا<br>ملاحظاتك<br>لتحسين<br>خدمتنا</span>
+                        </button>
+                    </div>
+
+                    <button onclick="openLink('whatsapp')" class="btn-3d w-full bg-gradient-to-br from-[#f87171] to-[#dc2626] text-white rounded-[32px] py-6 flex flex-col items-center justify-center border border-[#b91c1c] mt-4">
+                        <div class="text-5xl mb-3">📞</div>
+                        <span class="font-extrabold text-2xl">لديك شكوى؟</span>
+                    </button>
+                </div>
+
+                <div id="internalFeedbackSection" class="hidden bg-white p-6 rounded-3xl shadow-xl border border-gray-100 animate-fade-in">
+                    <h3 class="font-bold text-blue-600 text-lg mb-4 flex items-center gap-2">
+                        <span class="text-2xl">📝</span> اكتب ملاحظاتك هنا:
+                    </h3>
+                    <textarea id="feedbackInput" rows="4" class="w-full p-3 border border-blue-200 rounded-xl bg-blue-50/30 outline-none focus:ring-2 focus:ring-blue-400 mb-4 text-sm" placeholder="بماذا يمكننا تحسين خدمتنا لك؟ شاركنا رأيك بصراحة..."></textarea>
+                    
+                    <button onclick="submitInternalFeedback()" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-xl mb-3 transition shadow-sm">إرسال الملاحظة للإدارة</button>
+                    <button onclick="cancelInternalFeedback()" class="w-full text-gray-500 font-bold py-2 rounded-xl hover:bg-gray-50 transition text-sm">إلغاء والعودة</button>
+                </div>
+            </div>
+
+            <div class="text-center mt-10">
+                <button id="closePreviewBtn" onclick="closeCustomerPage()" class="text-sm font-bold text-gray-400 hover:text-[#5c4021] hidden px-4 py-2 bg-black/5 rounded-full">✕ إغلاق المعاينة</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ================= سكربت البرمجة ================= -->
+    <script>
+        let appState = { stores: [] };
+        let currentActiveStore = null;
+        let isPreviewMode = false;
+
+        window.addEventListener('DOMContentLoaded', () => {
+            const saved = localStorage.getItem('saas_db_v7_final');
+            if(saved) appState.stores = JSON.parse(saved);
+
+            const urlParams = new URLSearchParams(window.location.search);
+            const storeIdParam = urlParams.get('store');
+
+            if(storeIdParam) loadCustomerViewOnly(storeIdParam);
+            else showPage('loginPage');
+        });
+
+        function saveState() { localStorage.setItem('saas_db_v7_final', JSON.stringify(appState.stores)); }
+
+        function showPage(id) {
+            ['loginPage', 'ownerDashboard', 'storeDashboard', 'mainNav', 'customerPage'].forEach(p => {
+                const el = document.getElementById(p); if(el) el.classList.add('hidden');
+            });
+            if(id !== 'loginPage' && id !== 'customerPage') document.getElementById('mainNav').classList.remove('hidden');
+            document.getElementById(id).classList.remove('hidden');
+        }
+
+        // تحديث كائن المتجر ليتضمن نوع الاستبيان (surveyType)
+        function createStoreObject(name, email, pass, status, expiry) {
+            return {
+                id: "st_" + Date.now(), name, email, pass, status, expiry,
+                logo: "", 
+                surveyType: "internal", // 'internal' او 'external'
+                links: { maps: "", whatsapp: "", form: "" }, 
+                analytics: { scans: 0, maps: 0, form: 0, whatsapp: 0 },
+                messages: []
+            };
+        }
+
+        document.getElementById('adminAddStoreForm').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const n = document.getElementById('adminNewName').value, em = document.getElementById('adminNewEmail').value, p = document.getElementById('adminNewPass').value;
+            let d = new Date(); d.setMonth(d.getMonth() + 1);
+            appState.stores.push(createStoreObject(n, em, p, 'active', d.toISOString().split('T')[0]));
+            saveState(); alert(`تم الإضافة!`); document.getElementById('adminAddStoreForm').reset(); renderOwnerDashboard();
+        });
+
+        document.getElementById('loginForm').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const email = document.getElementById('loginEmail').value, pass = document.getElementById('loginPassword').value;
+
+            if(email === "admin@saas.com" && pass === "admin123") {
+                document.getElementById('navTitle').innerText = "لوحة تحكم المالك";
+                renderOwnerDashboard(); showPage('ownerDashboard'); return;
+            }
+
+            const store = appState.stores.find(s => s.email === email && s.pass === pass);
+            if(store) { openStoreDashboard(store.id); return; }
+            alert("خطأ في البيانات!");
+        });
+
+        function logout() { document.getElementById('loginForm').reset(); window.history.pushState({}, document.title, window.location.pathname); showPage('loginPage'); }
+
+        function renderOwnerDashboard() {
+            const list = document.getElementById('ownerStoresList');
+            document.getElementById('totalStoresCount').innerText = appState.stores.length;
+            list.innerHTML = "";
+            appState.stores.forEach(st => {
+                let badge = `<span class="bg-emerald-100 text-emerald-800 px-2 py-1 rounded text-xs">نشط</span>`;
+                list.innerHTML += `<tr class="border-b"><td class="p-4"><strong>${st.name}</strong><br><span class="text-xs text-gray-500">${st.email}</span></td><td class="p-4">${badge}</td><td class="p-4"><input type="date" value="${st.expiry}" class="border p-1 rounded text-sm"></td><td class="p-4"><button onclick="impersonateStore('${st.id}')" class="bg-indigo-50 text-indigo-700 px-3 py-1.5 rounded-lg text-xs font-bold">لوحة المتجر</button></td></tr>`;
+            });
+        }
+
+        function impersonateStore(id) { document.getElementById('returnToOwnerBtn').classList.remove('hidden'); openStoreDashboard(id); }
+        function backToOwner() { document.getElementById('returnToOwnerBtn').classList.add('hidden'); document.getElementById('navTitle').innerText = "لوحة تحكم المالك"; showPage('ownerDashboard'); }
+
+        document.getElementById('logoUpload').addEventListener('change', function(e) {
+            const file = e.target.files[0]; if(!file) return;
+            const reader = new FileReader();
+            reader.onload = function(event) {
+                const img = new Image(); img.onload = function() {
+                    const canvas = document.createElement('canvas'); const scale = 250 / img.width;
+                    canvas.width = 250; canvas.height = img.height * scale;
+                    canvas.getContext('2d').drawImage(img, 0, 0, canvas.width, canvas.height);
+                    currentActiveStore.logo = canvas.toDataURL('image/png', 0.9);
+                    document.getElementById('logoPreview').src = currentActiveStore.logo;
+                    document.getElementById('logoPreview').classList.remove('hidden');
+                }; img.src = event.target.result;
+            }; reader.readAsDataURL(file);
+        });
+
+        // التحكم في إظهار وإخفاء إعدادات الاستبيان الداخلي/الخارجي
+        function toggleSurveySettings() {
+            const selectedType = document.querySelector('input[name="surveyType"]:checked').value;
+            if(selectedType === 'external') {
+                document.getElementById('externalSurveySettings').classList.remove('hidden');
+                document.getElementById('internalSurveySettings').classList.add('hidden');
+            } else {
+                document.getElementById('externalSurveySettings').classList.add('hidden');
+                document.getElementById('internalSurveySettings').classList.remove('hidden');
+            }
+        }
+
+        function openStoreDashboard(id) {
+            currentActiveStore = appState.stores.find(s => s.id === id);
+            
+            // تهيئة الخصائص للمتاجر القديمة إذا لم تكن موجودة
+            if(!currentActiveStore.analytics) currentActiveStore.analytics = { scans: 0, maps: 0, form: 0, whatsapp: 0 };
+            if(!currentActiveStore.messages) currentActiveStore.messages = [];
+            if(!currentActiveStore.surveyType) currentActiveStore.surveyType = "internal";
+            if(!currentActiveStore.links.form) currentActiveStore.links.form = "";
+
+            document.getElementById('navTitle').innerText = `لوحة: ${currentActiveStore.name}`;
+            document.getElementById('setGoogle').value = currentActiveStore.links.maps || "";
+            document.getElementById('setWhatsapp').value = currentActiveStore.links.whatsapp || "";
+            document.getElementById('setForm').value = currentActiveStore.links.form || "";
+
+            // تحديد زر الراديو المناسب
+            document.querySelector(`input[name="surveyType"][value="${currentActiveStore.surveyType}"]`).checked = true;
+            toggleSurveySettings();
+
+            document.getElementById('statScans').innerText = currentActiveStore.analytics.scans;
+            document.getElementById('statMaps').innerText = currentActiveStore.analytics.maps;
+            document.getElementById('statForm').innerText = currentActiveStore.analytics.form; 
+            document.getElementById('statWa').innerText = currentActiveStore.analytics.whatsapp;
+
+            renderInbox();
+
+            if(currentActiveStore.logo) {
+                document.getElementById('logoPreview').src = currentActiveStore.logo;
+                document.getElementById('logoPreview').classList.remove('hidden');
+            } else { document.getElementById('logoPreview').classList.add('hidden'); }
+
+            generateQR(id); showPage('storeDashboard');
+        }
+
+        function renderInbox() {
+            const inbox = document.getElementById('inboxMessages');
+            inbox.innerHTML = "";
+            if(currentActiveStore.messages.length === 0) {
+                inbox.innerHTML = `<p class="text-sm text-gray-400 text-center py-6">لا توجد رسائل جديدة حتى الآن.</p>`;
+                return;
+            }
+            [...currentActiveStore.messages].reverse().forEach(msg => {
+                inbox.innerHTML += `
+                    <div class="bg-blue-50 border border-blue-100 p-3 rounded-xl relative">
+                        <span class="text-[10px] font-mono text-blue-400 absolute top-2 left-3">${msg.date}</span>
+                        <p class="text-sm text-gray-700 mt-2 whitespace-pre-wrap">${msg.text}</p>
+                    </div>
+                `;
+            });
+        }
+
+        document.getElementById('settingsForm').addEventListener('submit', (e) => {
+            e.preventDefault();
+            currentActiveStore.links.maps = document.getElementById('setGoogle').value;
+            currentActiveStore.links.whatsapp = document.getElementById('setWhatsapp').value;
+            currentActiveStore.links.form = document.getElementById('setForm').value;
+            currentActiveStore.surveyType = document.querySelector('input[name="surveyType"]:checked').value;
+            saveState(); alert("✅ تم حفظ الإعدادات بنجاح!");
+        });
+
+        function generateQR(id) {
+            const container = document.getElementById('storeQrCode'); container.innerHTML = "";
+            new QRCode(container, { text: window.location.href.split('?')[0] + "?store=" + id, width: 180, height: 180 });
+        }
+
+        function downloadQR() {
+            const qr = document.getElementById('storeQrCode');
+            const img = qr.querySelector('img') || qr.querySelector('canvas');
+            if(img) {
+                const a = document.createElement('a'); a.href = img.src || img.toDataURL();
+                a.download = `QR_${currentActiveStore.name}.png`; document.body.appendChild(a); a.click(); document.body.removeChild(a);
+            }
+        }
+
+        // ================= بوت المستشار الذكي =================
+        function runSmartBot() {
+            const analytics = currentActiveStore.analytics;
+            const messages = currentActiveStore.messages || [];
+            let adviceHtml = `<div class="space-y-5">`;
+
+            const totalActions = analytics.maps + analytics.form + analytics.whatsapp;
+            
+            adviceHtml += `<div class="p-4 bg-gray-50 rounded-xl border border-gray-200">
+                <h3 class="font-bold text-gray-800 flex items-center gap-2 mb-2"><span>📊</span> معدل التفاعل</h3>`;
+            if (analytics.scans === 0) {
+                adviceHtml += `<p class="text-sm">لم يقم أحد بمسح الباركود حتى الآن. <br><strong class="text-indigo-600">نصيحة:</strong> قم بطباعة الباركود وضعه في أماكن مرئية بوضوح.</p>`;
+            } else if (totalActions === 0) {
+                 adviceHtml += `<p class="text-sm">هناك مسح للباركود لكن بلا أي ضغط. <br><strong class="text-indigo-600">نصيحة:</strong> العملاء مترددون. حاول تحفيزهم مشافهةً.</p>`;
+            } else {
+                 const conversionRate = Math.round((totalActions / analytics.scans) * 100);
+                 adviceHtml += `<p class="text-sm">معدل اتخاذ إجراء بعد مسح الباركود هو <span class="font-bold text-green-600 text-lg">${conversionRate > 100 ? 100 : conversionRate}%</span>.</p>`;
+            }
+            adviceHtml += `</div>`;
+
+            adviceHtml += `<div class="p-4 bg-blue-50 rounded-xl border border-blue-100">
+                <h3 class="font-bold text-blue-800 flex items-center gap-2 mb-2"><span>🌟</span> مؤشر رضا العملاء</h3>`;
+            if (totalActions > 0) {
+                const negativeActions = analytics.form + analytics.whatsapp;
+                if (analytics.maps > negativeActions * 2) {
+                    adviceHtml += `<p class="text-sm">أداؤك مذهل! الغالبية الساحقة تتجه لتقييمك إيجابياً على خرائط جوجل.</p>`;
+                } else if (negativeActions > analytics.maps) {
+                    adviceHtml += `<p class="text-sm text-red-600 font-bold">انتباه: نسبة الشكاوى والملاحظات أعلى من التقييمات الإيجابية.</p>`;
+                } else {
+                    adviceHtml += `<p class="text-sm">الأداء متوازن ومستقر بين التقييمات الإيجابية والملاحظات البناءة.</p>`;
+                }
+            } else {
+                adviceHtml += `<p class="text-sm">بانتظار تفاعل العملاء لحساب مؤشر الرضا.</p>`;
+            }
+            adviceHtml += `</div>`;
+
+            adviceHtml += `<div class="p-4 bg-orange-50 rounded-xl border border-orange-100">
+                <h3 class="font-bold text-orange-800 flex items-center gap-2 mb-2"><span>🔍</span> تحليل نصوص الشكاوى</h3>`;
+            if (messages.length > 0) {
+                let keywords = { "تأخير": 0, "غالي": 0, "سيء": 0, "نظيف": 0, "وسخ": 0, "ممتاز": 0, "بارد": 0, "بطيء": 0 };
+                messages.forEach(msg => {
+                    let text = msg.text;
+                    for (let word in keywords) { if (text.includes(word)) keywords[word]++; }
+                });
+
+                let detectedIssues = [];
+                if (keywords["تأخير"] > 0 || keywords["بطيء"] > 0) detectedIssues.push("بطء/تأخير في الخدمة ⏱️");
+                if (keywords["غالي"] > 0) detectedIssues.push("ملاحظات حول الأسعار 💰");
+                if (keywords["بارد"] > 0) detectedIssues.push("حرارة/جودة الطعام 🍔");
+                if (keywords["سيء"] > 0 || keywords["وسخ"] > 0) detectedIssues.push("مشاكل في النظافة أو الجودة 🧹");
+
+                if (detectedIssues.length > 0) {
+                    adviceHtml += `<p class="text-sm">لاحظ البوت تكرار كلمات تشير إلى المشاكل التالية:</p>
+                                   <ul class="list-disc list-inside text-sm font-bold text-red-600 mt-2">${detectedIssues.map(i => `<li>${i}</li>`).join('')}</ul>`;
+                } else {
+                     adviceHtml += `<p class="text-sm">لم يكتشف البوت أنماط شكاوى مكررة واضحة. يرجى قراءة الرسائل يدوياً.</p>`;
+                }
+            } else {
+                adviceHtml += `<p class="text-sm">لا توجد رسائل في صندوق الوارد ليتم تحليلها بعد.</p>`;
+            }
+            adviceHtml += `</div></div>`;
+
+            document.getElementById('botAdviceContent').innerHTML = adviceHtml;
+            document.getElementById('botModal').classList.remove('hidden');
+        }
+
+        function closeBotModal() { document.getElementById('botModal').classList.add('hidden'); }
+
+        // ================= عمليات واجهة العميل =================
+        function loadCustomerViewOnly(storeId) {
+            currentActiveStore = appState.stores.find(s => s.id === storeId);
+            if(!currentActiveStore) return document.body.innerHTML = "<h2 style='text-align:center; padding:50px; color:red;'>الباركود غير صالح.</h2>";
+
+            if(!isPreviewMode) {
+                if(!currentActiveStore.analytics) currentActiveStore.analytics = { scans: 0, maps: 0, form: 0, whatsapp: 0 };
+                currentActiveStore.analytics.scans += 1; saveState();
+            }
+
+            const logoEl = document.getElementById('custLogo');
+            const placeholderEl = document.getElementById('custLogoPlaceholder');
+            if(currentActiveStore.logo) {
+                logoEl.src = currentActiveStore.logo; logoEl.classList.remove('hidden'); placeholderEl.classList.add('hidden');
+            } else {
+                logoEl.classList.add('hidden'); placeholderEl.classList.remove('hidden');
+            }
+            
+            document.getElementById('internalFeedbackSection').classList.add('hidden');
+            document.getElementById('mainButtonsSection').classList.remove('hidden');
+            document.getElementById('feedbackInput').value = "";
+
+            showPage('customerPage');
+        }
+
+        function previewCustomerPage() {
+            isPreviewMode = true; loadCustomerViewOnly(currentActiveStore.id);
+            document.getElementById('closePreviewBtn').classList.remove('hidden');
+        }
+
+        function closeCustomerPage() {
+            if(isPreviewMode) {
+                showPage('storeDashboard'); isPreviewMode = false;
+                document.getElementById('closePreviewBtn').classList.add('hidden');
+                openStoreDashboard(currentActiveStore.id);
+            }
+        }
+
+        // توجيه زر الاستبيان بناءً على إعدادات المتجر
+        function handleSurveyClick() {
+            if(currentActiveStore.surveyType === 'external') {
+                openLink('form'); // يفتح رابط جوجل فورمز الخارجي
+            } else {
+                showInternalFeedbackForm(); // يفتح صندوق الكتابة الداخلي
+            }
+        }
+
+        function showInternalFeedbackForm() {
+            document.getElementById('mainButtonsSection').classList.add('hidden');
+            document.getElementById('internalFeedbackSection').classList.remove('hidden');
+        }
+
+        function cancelInternalFeedback() {
+            document.getElementById('internalFeedbackSection').classList.add('hidden');
+            document.getElementById('mainButtonsSection').classList.remove('hidden');
+        }
+
+        function submitInternalFeedback() {
+            const text = document.getElementById('feedbackInput').value.trim();
+            if(!text) return alert("الرجاء كتابة الملاحظة أولاً.");
+
+            if(!currentActiveStore.messages) currentActiveStore.messages = [];
+            const dateStr = new Date().toLocaleDateString('ar-IQ') + ' - ' + new Date().toLocaleTimeString('ar-IQ', {hour: '2-digit', minute:'2-digit'});
+            
+            currentActiveStore.messages.push({ date: dateStr, text: text });
+            
+            if(!isPreviewMode) {
+                currentActiveStore.analytics.form += 1; 
+                saveState();
+            }
+
+            alert("✅ شكراً لك! تم إرسال ملاحظاتك للإدارة بنجاح.");
+            cancelInternalFeedback();
+            document.getElementById('feedbackInput').value = "";
+        }
+
+        function openLink(type) {
+            const links = currentActiveStore.links; let url = "";
+            if(type === 'maps') url = links.maps;
+            if(type === 'form') url = links.form; // رابط خارجي جوجل فورمز
+            if(type === 'whatsapp') { let phone = links.whatsapp.replace(/[^0-9]/g, ''); url = `https://api.whatsapp.com/send?phone=${phone}`; }
+
+            if(url && url.trim() !== "") {
+                if(!isPreviewMode) { currentActiveStore.analytics[type] += 1; saveState(); }
+                window.open(url, '_blank');
+            } else { alert("صاحب المتجر لم يقم بإضافة هذا الرابط بعد."); }
+        }
+    </script>
+</body>
+</html>
